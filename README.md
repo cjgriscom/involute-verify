@@ -11,21 +11,52 @@ This workspace contains:
 
 Puzzle definitions are downloaded at runtime from `https://involute.chandler.io/puzzles/{id}/{version}/` and cached under `~/.cache/involute-verify`.
 
+## Download
+
+Prebuilt Linux x86_64 binaries are published on [GitHub Releases](https://github.com/cjgriscom/involute-verify/releases). Download the `involute-verify` asset, make it executable, and run it directly:
+
+```bash
+chmod +x involute-verify
+./involute-verify path/to/recording.json
+```
+
+CI workflow runs also expose the same binary as a workflow artifact named **`involute-verify-linux-x86_64`** (Actions → workflow run → Artifacts).
+
+Requires OpenSSL on `PATH` at runtime.
+
 ## Build
 
 ```bash
 cargo build -p involute-verify --release
 ```
 
-Requires OpenSSL on `PATH` at runtime.
-
 ## Usage
 
-```bash
-cargo run -p involute-verify -- path/to/recording.json
+```
+involute-verify [OPTIONS] <RECORDING>
 ```
 
-See [`crates/involute-verify/README.md`](crates/involute-verify/README.md) for cache layout, flags, and trust model.
+| Argument / option | Description |
+|-----------------|-------------|
+| `<RECORDING>` | Path to an Involute solve recording JSON file |
+| `--json` | Print `SolveVerification` JSON on stdout (progress still on stderr) |
+| `-q`, `--quiet` | Suppress progress messages on stderr |
+| `--cache-dir <DIR>` | Cache directory (default: `~/.cache/involute-verify`) |
+| `--puzzle-base-url <URL>` | Base URL for versioned puzzle artifacts (default: `https://involute.chandler.io/puzzles`) |
+| `--force-refresh-certs` | Re-probe moda backends even if the cached CA bundle is fresh |
+| `-h`, `--help` | Print help |
+
+```bash
+involute-verify path/to/recording.json
+involute-verify --json path/to/recording.json
+involute-verify -q path/to/recording.json
+involute-verify --cache-dir /tmp/iv-cache recording.json
+involute-verify --force-refresh-certs recording.json
+```
+
+Exit code `0` = pass, non-zero = fail.
+
+See [`crates/involute-verify/README.md`](crates/involute-verify/README.md) for cache layout and trust model.
 
 ## Spec
 
