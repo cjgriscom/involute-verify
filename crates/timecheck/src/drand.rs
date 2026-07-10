@@ -47,7 +47,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::Verified;
 
-#[expect(missing_docs)]
+#[allow(missing_docs)]
 pub type Result<T, E = DrandError> = std::result::Result<T, E>;
 
 /// Default randomness beacon URL.
@@ -58,7 +58,7 @@ pub const DEFAULT_DRAND_URL: &str = "https://api.drand.sh";
 
 #[derive(thiserror::Error, Debug)]
 #[non_exhaustive]
-#[expect(missing_docs)]
+#[allow(missing_docs)]
 pub enum DrandError {
     #[error("timestamp out of range")]
     TimestampOutOfRange,

@@ -1,9 +1,20 @@
 //! Scheme for cheating-resistant deterministic games using randomness beacons
 //! and time stamp authorities.
 //!
-//! This is based on [a scheme for cheating-resistant racing
+//! # Provenance
+//!
+//! Vendored from [Hyperspeedcube](https://github.com/HactarCE/Hyperspeedcube)’s
+//! [`timecheck`](https://github.com/HactarCE/Hyperspeedcube/tree/main/crates/timecheck)
+//! crate by **Andrew Farkas** ([HactarCE](https://github.com/HactarCE)).
+//!
+//! Based on [a scheme for cheating-resistant racing
 //! games](https://www.5snb.club/posts/2025/cheating-resistant-racing-games/) by
 //! [5225225](https://www.5snb.club/).
+//!
+//! See this crate’s `README.md` for the list of local modifications (TSA PEM /
+//! `-untrusted` / `-partial_chain` support for moda backends).
+//!
+//! # Overview
 //!
 //! The idea is to use an [Interoperable Randomness Beacon][irb] to verify when
 //! a run begins, and a [Time Stamping Authority][tsa] to verify when a run
@@ -61,12 +72,12 @@ pub mod drand;
 #[cfg(feature = "tsa")]
 pub mod tsa;
 
-#[expect(missing_docs)]
+#[allow(missing_docs)]
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[derive(thiserror::Error, Debug)]
 #[non_exhaustive]
-#[expect(missing_docs)]
+#[allow(missing_docs)]
 pub enum Error {
     #[cfg(feature = "drand")]
     #[error("{0}")]

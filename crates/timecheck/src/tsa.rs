@@ -1,5 +1,10 @@
 //! Verification of end times using a Time Stamp Authority.
 //!
+//! Upstream: Hyperspeedcube `timecheck::tsa` by Andrew Farkas (HactarCE).
+//! Local additions: [`Tsa::with_pem`], [`Tsa::verify_with_untrusted`], and
+//! [`Tsa::verify_with_options`] (`-untrusted` / `-partial_chain`) for moda
+//! multi-CA verification — see the crate `README.md`.
+//!
 //! # Example
 //!
 //! ```
@@ -47,12 +52,12 @@ use serde::{Deserialize, Serialize};
 use tempfile::NamedTempFile;
 use tsp_http_client::TimeStampResponse;
 
-#[expect(missing_docs)]
+#[allow(missing_docs)]
 pub type Result<T, E = TsaError> = std::result::Result<T, E>;
 
 #[derive(thiserror::Error, Debug)]
 #[non_exhaustive]
-#[expect(missing_docs)]
+#[allow(missing_docs)]
 pub enum TsaError {
     #[error("io error: {0}")]
     Io(#[from] std::io::Error),
@@ -88,6 +93,20 @@ impl Tsa {
         base_url: Cow::Borrowed("https://www.freetsa.org/tsr"),
         pem: Cow::Borrowed(include_str!("../certs/freetsa/cacert.pem")),
     };
+
+    /// Construct a TSA client/verifier with an arbitrary CA PEM bundle.
+    ///
+    /// `pem` may contain one or more concatenated PEM certificates used as
+    /// `-CAfile` during [`Tsa::verify`] / [`Tsa::verify_with_untrusted`].
+    pub fn with_pem(
+        base_url: impl Into<Cow<'static, str>>,
+        pem: impl Into<Cow<'static, str>>,
+    ) -> Self {
+        Self {
+            base_url: base_url.into(),
+            pem: pem.into(),
+        }
+    }
 }
 
 /// Signature from a Time Stamp Authority.
@@ -135,22 +154,66 @@ impl Tsa {
     ///
     /// **This method blocks while waiting on an external process.**
     pub fn verify(&self, expected_digest: &[u8], response: &Signature) -> Result<()> {
+        self.verify_with_untrusted(expected_digest, response, None)
+    }
+
+    /// Like [`Tsa::verify`], but optionally passes intermediate certificates
+    /// via openssl `-untrusted` (e.g. the chain embedded in a `certReq` TSR).
+    ///
+    /// **This method blocks while waiting on an external process.**
+    pub fn verify_with_untrusted(
+        &self,
+        expected_digest: &[u8],
+        response: &Signature,
+        untrusted_pem: Option<&str>,
+    ) -> Result<()> {
+        self.verify_with_options(expected_digest, response, untrusted_pem, false)
+    }
+
+    /// Like [`Tsa::verify_with_untrusted`], with optional openssl `-partial_chain`
+    /// (needed when the trusted PEM contains intermediates used as trust anchors,
+    /// e.g. a moda-probed CA bundle that does not include public roots).
+    ///
+    /// **This method blocks while waiting on an external process.**
+    pub fn verify_with_options(
+        &self,
+        expected_digest: &[u8],
+        response: &Signature,
+        untrusted_pem: Option<&str>,
+        partial_chain: bool,
+    ) -> Result<()> {
         let tsr_file_path = NamedTempFile::new()?;
         let pem_file_path = NamedTempFile::new()?;
         std::fs::write(&tsr_file_path, &response.0)?;
         std::fs::write(&pem_file_path, self.pem.as_bytes())?;
-        let output = std::process::Command::new("openssl")
-            .arg("ts")
+
+        let untrusted_file = if let Some(pem) = untrusted_pem {
+            let path = NamedTempFile::new()?;
+            std::fs::write(&path, pem.as_bytes())?;
+            Some(path)
+        } else {
+            None
+        };
+
+        let mut cmd = std::process::Command::new("openssl");
+        cmd.arg("ts")
             .arg("-verify")
             .arg("-digest")
             .arg(hex::encode(expected_digest))
             .arg("-in")
             .arg(tsr_file_path.path())
             .arg("-CAfile")
-            .arg(pem_file_path.path())
-            .output()?;
+            .arg(pem_file_path.path());
+        if let Some(ref untrusted) = untrusted_file {
+            cmd.arg("-untrusted").arg(untrusted.path());
+        }
+        if partial_chain {
+            cmd.arg("-partial_chain");
+        }
+        let output = cmd.output()?;
         drop(tsr_file_path);
         drop(pem_file_path);
+        drop(untrusted_file);
         if output.status.success() {
             Ok(())
         } else {
