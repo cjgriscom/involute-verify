@@ -2,24 +2,19 @@
 name = "timecheck"
 description = "Scheme for cheating-resistant deterministic games using randomness beacons and time stamp authorities"
 version = "0.1.0"
-authors.workspace = true
-documentation.workspace = true
 edition.workspace = true
-homepage.workspace = true
-repository.workspace = true
+license.workspace = true
 rust-version.workspace = true
-keywords = ["user-data", "config-directory", "path", "folder", "app_dirs"]
-categories = ["filesystem"]
-license = "MIT OR Apache-2.0"
-
-[lints]
-workspace = true
+repository = "https://github.com/cjgriscom/involute-verify"
+readme = "README.md"
+# Upstream author (Hyperspeedcube); local TSA extensions for Involute.
+authors = ["Andrew Farkas"]
 
 [dependencies]
-chrono.workspace = true
-hex = { workspace = true, features = ["serde"] }
-serde.workspace = true
-thiserror.workspace = true
+chrono = { workspace = true }
+hex = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
 
 # drand-only
 drand-verify = { workspace = true, optional = true }
@@ -31,7 +26,7 @@ tempfile = { workspace = true, optional = true }
 tsp-http-client = { workspace = true, optional = true }
 
 [dev-dependencies]
-sha2.workspace = true
+sha2 = { workspace = true }
 
 [features]
 default = ["drand", "tsa"]
