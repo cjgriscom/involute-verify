@@ -26,3 +26,7 @@ tempfile = "3.26.0"
 thiserror = "2.0.18"
 tsp-http-client = "0.1.0"
 ureq = { version = "3.2.0", features = ["json"] }
+
+[profile.release]
+opt-level = "z"
+strip = true
