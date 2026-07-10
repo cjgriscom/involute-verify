@@ -1,0 +1,14 @@
+id: "box4"
+version: "1.0.0"
+name: "Box [4]"
+groupName: "S₄"
+order: 24
+pieces: 4
+minScrambleMoves: 20
+scrambleRejectionBfsDepth: 0
+category: "dev"
+colorScheme: "piece"
+# Four corners of a square; each move flips one edge.
+generator: "[(1,2),(2,3),(3,4),(4,1)]"
+grid: "((1,2),(4,3))"
+namedStates: []

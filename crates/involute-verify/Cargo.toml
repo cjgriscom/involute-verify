@@ -1,0 +1,41 @@
+[package]
+name = "involute-verify"
+description = "Verify INVOLUTE competitive solve recordings (Linux CLI)"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+readme = "README.md"
+repository = "https://github.com/cjgriscom/involute-verify"
+homepage = "https://involute.chandler.io"
+keywords = ["involute", "puzzle", "timestamp", "rfc3161", "drand"]
+categories = ["command-line-utilities", "cryptography"]
+
+[lib]
+name = "involute_verify"
+path = "src/lib.rs"
+
+[[bin]]
+name = "involute-verify"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+base64 = { workspace = true }
+blake3 = { workspace = true }
+chrono = { workspace = true }
+clap = { workspace = true }
+hex = { workspace = true }
+rand_chacha = { workspace = true }
+rand_core = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+sha2 = { workspace = true }
+tempfile = { workspace = true }
+timecheck = { path = "../timecheck" }
+ureq = { workspace = true }
+
+[dev-dependencies]
+timecheck = { path = "../timecheck" }
+tempfile = { workspace = true }
