@@ -7,10 +7,11 @@
 //! # Example
 //!
 //! ```
-//! use chrono::Utc;
+//! use chrono::{TimeDelta, Utc};
 //!
 //! // Globals shared by client & server
 //! let drand = timecheck::drand::Drand::default(); // to verify start times
+//! let allowed_clock_drift = TimeDelta::seconds(5); // drift + beacon publish delay
 //!
 //! // CLIENT SIDE:
 //!
@@ -28,9 +29,11 @@
 //! // Verify start time
 //! drand.chain.verify(&round)?;
 //! let verified_start_time_range = drand.chain.round_time_range(round.number)?;
+//! let loose_range = (verified_start_time_range.start - allowed_clock_drift)
+//!     ..(verified_start_time_range.end + allowed_clock_drift);
 //! assert!(
-//!     verified_start_time_range.contains(&time_immediately_before_starting_run)
-//!         || verified_start_time_range.contains(&time_immediately_after_starting_run)
+//!     loose_range.contains(&time_immediately_before_starting_run)
+//!         || loose_range.contains(&time_immediately_after_starting_run)
 //! );
 //! # Ok::<(), timecheck::drand::DrandError>(())
 //! ```
@@ -306,6 +309,10 @@ mod tests {
 
     fn test_drand_with_config(drand: Drand) -> Result<()> {
         let drand_chain = drand.chain.clone();
+        // Cover local clock skew and the short window where `/rounds/latest` may
+        // still return the previous round after its theoretical end (publish delay).
+        // Quicknet's 3s period makes this race easy to hit without slack.
+        let allowed_clock_drift = chrono::TimeDelta::seconds(5);
 
         let time_immediately_before_starting_run = Utc::now();
         let seed = drand.get_latest_randomness_round()?;
@@ -313,9 +320,13 @@ mod tests {
 
         drand_chain.verify(&seed).unwrap();
         let time_range = drand_chain.round_time_range(seed.number)?;
+        let loose_range =
+            (time_range.start - allowed_clock_drift)..(time_range.end + allowed_clock_drift);
         assert!(
-            time_range.contains(&time_immediately_before_starting_run)
-                || time_range.contains(&time_immediately_after_starting_run)
+            loose_range.contains(&time_immediately_before_starting_run)
+                || loose_range.contains(&time_immediately_after_starting_run),
+            "request [{time_immediately_before_starting_run}, {time_immediately_after_starting_run}] \
+             outside loose round {loose_range:?}"
         );
         Ok(())
     }
