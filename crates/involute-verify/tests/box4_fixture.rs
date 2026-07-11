@@ -102,7 +102,7 @@ fn box4_full_verify_with_tsa() {
 
     let recording = load_recording(&fixture_path()).unwrap();
     let report = verify_loaded(&recording, &options).expect("full verify should pass");
-    assert_eq!(report.puzzle_canonical_id, "box4");
+    assert_eq!(report.puzzle_canonical_id, "test_puzzle");
     assert!(report.errors.is_empty());
     assert!(report.verified_timestamps.scramble_range_start.is_some());
     assert!(report.verified_timestamps.scramble_range_end.is_some());

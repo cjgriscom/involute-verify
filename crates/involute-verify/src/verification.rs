@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 /// Result of a successful (or partially annotated) solve verification.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct SolveVerification {
-    /// Canonical puzzle id (leaderboard category).
+    /// Canonical puzzle id from `data.yaml` `leaderboardIDString`.
     pub puzzle_canonical_id: String,
     /// Puzzle definition version string.
     pub puzzle_version: String,

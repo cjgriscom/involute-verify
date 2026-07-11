@@ -17,6 +17,8 @@ pub struct PuzzleDef {
     pub id: String,
     pub version: String,
     pub name: String,
+    /// Leaderboard category id from `leaderboardIDString` in `data.yaml`.
+    pub leaderboard_id_string: String,
     pub pieces: u16,
     pub min_scramble_moves: u32,
     pub scramble_rejection_bfs_depth: i32,
@@ -38,6 +40,8 @@ struct YamlPuzzle {
     id: String,
     version: String,
     name: String,
+    #[serde(rename = "leaderboardIDString")]
+    leaderboard_id_string: String,
     pieces: u16,
     #[serde(rename = "minScrambleMoves")]
     min_scramble_moves: u32,
@@ -85,6 +89,7 @@ pub fn load_puzzle_from_dir(dir: &Path, id: &str, version: &str) -> anyhow::Resu
         id: yaml.id,
         version: yaml.version,
         name: yaml.name,
+        leaderboard_id_string: yaml.leaderboard_id_string,
         pieces: yaml.pieces,
         min_scramble_moves: yaml.min_scramble_moves,
         scramble_rejection_bfs_depth: yaml.scramble_rejection_bfs_depth,

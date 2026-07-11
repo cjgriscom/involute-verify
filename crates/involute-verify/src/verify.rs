@@ -275,7 +275,7 @@ pub fn verify_loaded(
     let durations = Durations::new(timestamps, verified_timestamps, false);
 
     Ok(SolveVerification {
-        puzzle_canonical_id: recording.puzzle_id.clone(),
+        puzzle_canonical_id: puzzle.leaderboard_id_string.clone(),
         puzzle_version: recording.puzzle_version.clone(),
         solution_stm,
         used_filters: false,

@@ -6,6 +6,9 @@ order: 24
 pieces: 4
 minScrambleMoves: 20
 scrambleRejectionBfsDepth: 0
+leaderboardId: 33 # 'Other' category
+leaderboardSubmitId: 1
+leaderboardIDString: "test_puzzle"
 category: "dev"
 colorScheme: "piece"
 # Four corners of a square; each move flips one edge.
