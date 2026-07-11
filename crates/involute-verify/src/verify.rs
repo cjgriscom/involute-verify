@@ -297,21 +297,77 @@ fn absolute_time(scramble: DateTime<Utc>, t_ms: u64) -> DateTime<Utc> {
     scramble + Duration::milliseconds(t_ms as i64)
 }
 
-/// Net moves after undos (solution STM).
+/// Net solution STM after undos and consecutive identical-move cancellation.
+///
+/// See `docs/stm.md`.
 fn count_solution_stm(events: &[SolveEvent]) -> u64 {
-    let mut stack = 0u64;
+    let mut moves: Vec<&str> = Vec::new();
     for event in events {
         match event {
-            SolveEvent::Move { .. } => stack += 1,
+            SolveEvent::Move { move_name, .. } => moves.push(move_name.as_str()),
             SolveEvent::Undo { .. } => {
-                stack = stack.saturating_sub(1);
+                moves.pop();
             }
             _ => {}
         }
     }
-    stack
+
+    // Collapse consecutive identical moves in pairs (A A → ∅, A A A → A).
+    let mut stack: Vec<&str> = Vec::new();
+    for m in moves {
+        if stack.last() == Some(&m) {
+            stack.pop();
+        } else {
+            stack.push(m);
+        }
+    }
+    stack.len() as u64
 }
 
 fn eq_hex_ignore_case(a: &str, b: &str) -> bool {
     a.eq_ignore_ascii_case(b)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::recording::SolveEvent;
+
+    fn moves(names: &[&str]) -> Vec<SolveEvent> {
+        names
+            .iter()
+            .enumerate()
+            .map(|(i, name)| SolveEvent::Move {
+                t: i as u64,
+                move_name: (*name).to_string(),
+            })
+            .collect()
+    }
+
+    #[test]
+    fn stm_collapses_consecutive_identical_moves() {
+        // B A A C → B C
+        assert_eq!(count_solution_stm(&moves(&["B", "A", "A", "C"])), 2);
+        // B A A A C → B A C
+        assert_eq!(count_solution_stm(&moves(&["B", "A", "A", "A", "C"])), 3);
+        // B A A B C → C
+        assert_eq!(count_solution_stm(&moves(&["B", "A", "A", "B", "C"])), 1);
+    }
+
+    #[test]
+    fn stm_applies_undos_before_collapse() {
+        let events = vec![
+            SolveEvent::Move {
+                t: 0,
+                move_name: "A".into(),
+            },
+            SolveEvent::Move {
+                t: 1,
+                move_name: "A".into(),
+            },
+            SolveEvent::Undo { t: 2 },
+        ];
+        // After undo: [A], not an empty cancelled pair.
+        assert_eq!(count_solution_stm(&events), 1);
+    }
 }

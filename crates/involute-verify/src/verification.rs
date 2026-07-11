@@ -13,7 +13,9 @@ pub struct SolveVerification {
     pub puzzle_canonical_id: String,
     /// Puzzle definition version string.
     pub puzzle_version: String,
-    /// Net solution move count (STM after undos).
+    /// Net solution move count (STM after undos and consecutive cancellations).
+    ///
+    /// See `docs/stm.md`.
     pub solution_stm: u64,
     /// Whether piece filters were used (always `false` for Involute v1).
     pub used_filters: bool,

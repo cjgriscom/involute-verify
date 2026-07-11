@@ -60,7 +60,7 @@ See [`crates/involute-verify/README.md`](crates/involute-verify/README.md) for c
 
 ## Spec
 
-Recording wire format: [`docs/solve-recording.md`](docs/solve-recording.md).
+Solution STM counting: [`docs/stm.md`](docs/stm.md).
 
 ## Attribution
 
